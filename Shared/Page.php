@@ -306,31 +306,6 @@ class Shared_Page
         return $this;
     }
 
-    protected function clearStyleSheets(): self
-    {
-        $this->stylesheets = [];
-        return $this;
-    }
-
-    protected function clearJavascripts(): self
-    {
-        $this->head_javascripts = [];
-        $this->footer_javascripts = [];
-        return $this;
-    }
-
-    protected function clearMetaTags(): self
-    {
-        $this->meta_tags = [];
-        return $this;
-    }
-
-    protected function clearMetaData(string $key): self
-    {
-        unset($this->meta_tags[$key]);
-        return $this;
-    }
-
     protected function setAuthor(string $author): self
     {
         $this->author = $author;
