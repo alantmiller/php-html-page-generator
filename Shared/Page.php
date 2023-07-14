@@ -3,9 +3,39 @@
  * @author Alan T. Miller <alan@alanmiller.com>
  * @copyright Copyright (C) 2023, Alan T Miller, All Rights Reserved.
  *
- * Class Shared_Page.
+ * The class provides an object-oriented way to generate HTML pages.
+ * You can configure various aspects of the page, like its title, body ID, body content,
+ * and then use the `display` method to send the page to the client.
  *
- * This class provides an object-oriented way to generate HTML pages.
+ * Here is an example of how to use the Shared_Page class.
+ *
+ * Create a new page.
+ * $page = new Shared_Page();
+ *
+ * Set various properties on the page.
+ *
+ * $page->setTitle('My Sample Page')
+ *     ->setTitleSuffix(' - My Website')
+ *     ->setBodyId('sample-page')
+ *     ->setBodyClass('my-style')
+ *     ->setAuthor('Your Name')
+ *     ->setMetaData('description', 'This is a sample page created using Shared_Page class.')
+ *     ->setMetaData('keywords', 'Sample, Shared_Page, PHP')
+ *     ->setOpenGraphData('og:title', 'My Sample Page')
+ *     ->setOpenGraphData('og:description', 'This is a sample page created using Shared_Page class.')
+ *     ->setOpenGraphData('og:url', 'https://www.example.com/sample-page')
+ *     ->setOpenGraphData('og:image', 'https://www.example.com/images/sample-page.jpg')
+ *     ->setTwitterCardData('twitter:card', 'summary')
+ *     ->setTwitterCardData('twitter:site', '@yourTwitterHandle')
+ *     ->addBodyContent('<h1>Welcome to My Sample Page</h1><p>This is a sample page.</p>')
+ *     ->addStyleSheet('https://www.example.com/css/styles.css')
+ *     ->addJavascript('https://www.example.com/js/script.js');
+ *
+ * Send caching headers and display the page.
+ *
+ * $page->setCacheHeaders('public, max-age=86400', 86400)
+ *     ->display();
+ *
  */
 class Shared_Page
 {
@@ -18,16 +48,41 @@ class Shared_Page
     private string $title_separator = ' :: ';
     private string $meta_comment;
     private string $author;
-
     private array $meta_tags = [];
     private array $stylesheets = [];
     private array $head_javascripts = [];
     private array $footer_javascripts = [];
+    private array $openGraphData = [];
+    private array $twitterCardData = [];
     private string $doctype = "<!doctype html>";
     private string $viewport = "width=device-width, initial-scale=1";
 
     public function __construct()
     {
+        return $this;
+    }
+
+    /**
+     * Set caching headers.
+     *
+     * @param string $cacheControl
+     * @param string $expires
+     * @return $this
+     */
+    public function setCacheHeaders(string $cacheControl = 'no-cache', int $expires = 0): self
+    {
+        // Check if headers have been sent
+        if (headers_sent()) {
+            error_log('Cannot set headers, headers already sent');
+            return $this;
+        }
+
+        header('Cache-Control: ' . $cacheControl);
+
+        if ($expires > 0) {
+            header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
+        }
+
         return $this;
     }
 
@@ -105,21 +160,56 @@ class Shared_Page
     }
 
     /**
+     * Set an Open Graph property.
+     *
+     * @param string $property
+     * @param string $content
+     * @return $this
+     */
+    public function setOpenGraphData(string $property, string $content): self
+    {
+        $this->openGraphData[$property] = $content;
+        return $this;
+    }
+
+    /**
+     * Set a Twitter Card property.
+     *
+     * @param string $property
+     * @param string $content
+     * @return $this
+     */
+    public function setTwitterCardData(string $property, string $content): self
+    {
+        $this->twitterCardData[$property] = $content;
+        return $this;
+    }
+
+    /**
      * Add a CSS stylesheet.
      *
      * @param string $url
      * @param string $media
+     * @param bool $async
      * @return $this
      */
-    public function addStyleSheet(string $url, string $media = 'all'): self
+    public function addStyleSheet(string $url, string $media = 'all', bool $async = false): self
     {
         $this->stylesheets[] = [
             'media' => $media,
-            'url' => $url
+            'url' => $url,
+            'async' => $async
         ];
         return $this;
     }
 
+    /*
+     * Adds a JavaScript file to the page.
+     *
+     * @param string $url The URL of the JavaScript file.
+     * @param string $position The position of the JavaScript file (header or footer). Default is 'footer'.
+     * @return $this Returns the Shared_Page object for method chaining.
+     */
     public function addJavascript(string $url, string $position = 'footer'): self
     {
         if ($position == 'header') {
@@ -245,14 +335,28 @@ class Shared_Page
         $this->append('<title>' . ($fullTitle ?? $_SERVER["SCRIPT_NAME"]) . '</title>');
 
 
-        // Add meta tags
+        // Add meta tags if any
         if (!empty($this->meta_tags)) {
             foreach ($this->meta_tags as $name => $content) {
                 $this->html .= "<meta name=\"$name\" content=\"$content\">\n";
             }
         }
 
-        // Add stylesheets
+        // Process Open Graph data if the array has values
+        if (!empty($this->openGraphData)) {
+            foreach ($this->openGraphData as $property => $content) {
+                $this->append('<meta property="og:' . $property . '" content="' . $content . '">');
+            }
+        }
+
+        // Process Twitter Card data if the array has values
+        if (!empty($this->twitterCardData)) {
+            foreach ($this->twitterCardData as $property => $content) {
+                $this->append('<meta name="twitter:' . $property . '" content="' . $content . '">');
+            }
+        }
+
+        // Add stylesheets if any
         if (!empty($this->stylesheets)) {
             foreach ($this->stylesheets as $stylesheet) {
                 $this->html .= "<link rel=\"stylesheet\" href=\"$stylesheet\">\n";
