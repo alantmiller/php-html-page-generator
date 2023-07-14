@@ -8,8 +8,7 @@
  * and then use the `display` method to send the page to the client.
  *
  * Here is an example of how to use the Shared_Page class.
- *
- * Create a new page.
+ * * Create a new page.
  * $page = new Shared_Page();
  *
  * Set various properties on the page.
@@ -28,8 +27,8 @@
  *     ->setTwitterCardData('twitter:card', 'summary')
  *     ->setTwitterCardData('twitter:site', '@yourTwitterHandle')
  *     ->addBodyContent('<h1>Welcome to My Sample Page</h1><p>This is a sample page.</p>')
- *     ->addStyleSheet('https://www.example.com/css/styles.css')
- *     ->addJavascript('https://www.example.com/js/script.js');
+ *     ->addStyleSheet('https://www.example.com/css/styles.css', 'all', true)
+ *     ->addJavascript('https://www.example.com/js/script.js', 'footer', true);
  *
  * Send caching headers and display the page.
  *
@@ -39,26 +38,27 @@
  */
 class Shared_Page
 {
-    private string $html;
-    private string $body;
-    private string $body_id;
-    private string $body_class;
-    private string $title;
-    private string $title_suffix;
-    private string $title_separator = ' :: ';
-    private string $meta_comment;
-    private string $author;
-    private array $meta_tags = [];
-    private array $stylesheets = [];
-    private array $head_javascripts = [];
-    private array $footer_javascripts = [];
-    private array $openGraphData = [];
-    private array $twitterCardData = [];
-    private string $doctype = "<!doctype html>";
-    private string $viewport = "width=device-width, initial-scale=1";
+    protected string $html;
+    protected string $body;
+    protected string $body_id;
+    protected string $body_class;
+    protected string $title;
+    protected string $title_suffix;
+    protected string $title_separator = ' :: ';
+    protected string $meta_comment;
+    protected string $author;
+    protected array $meta_tags = [];
+    protected array $stylesheets = [];
+    protected array $head_javascripts = [];
+    protected array $footer_javascripts = [];
+    protected array $openGraphData = [];
+    protected array $twitterCardData = [];
+    protected string $doctype = "<!doctype html>";
+    protected string $viewport = "width=device-width, initial-scale=1";
 
     public function __construct()
     {
+        $this->setCharset(); // Defaults to UTF-8
         return $this;
     }
 
@@ -69,7 +69,7 @@ class Shared_Page
      * @param string $expires
      * @return $this
      */
-    public function setCacheHeaders(string $cacheControl = 'no-cache', int $expires = 0): self
+    protected function setCacheHeaders(string $cacheControl = 'no-cache', int $expires = 0): self
     {
         // Check if headers have been sent
         if (headers_sent()) {
@@ -86,13 +86,26 @@ class Shared_Page
         return $this;
     }
 
+
+    /**
+     * Set character set meta tag.
+     *
+     * @param string $charset The character set.
+     * @return $this
+     */
+    protected function setCharset(string $charset = 'UTF-8'): self
+    {
+        $this->append('<meta charset="' . $charset . '">');
+        return $this;
+    }
+
     /**
      * Set the title of the page.
      *
      * @param string $str
      * @return $this
      */
-    public function setTitle(string $str): self
+    protected function setTitle(string $str): self
     {
         $this->title = $str;
         return $this;
@@ -104,7 +117,7 @@ class Shared_Page
      * @param string $suffix
      * @return $this
      */
-    public function setTitleSuffix(string $suffix): self
+    protected function setTitleSuffix(string $suffix): self
     {
         $this->title_suffix = $suffix;
         return $this;
@@ -116,9 +129,9 @@ class Shared_Page
      * @param string $str
      * @return $this
      */
-    public function setTitleSeperator(string $str): self
+    protected function setTitleSeparator(string $str): self
     {
-        $this->title_seperator = $str;
+        $this->title_separator = $str;
         return $this;
     }
 
@@ -128,7 +141,7 @@ class Shared_Page
      * @param string $str
      * @return $this
      */
-    public function setBodyId(string $str): self
+    protected function setBodyId(string $str): self
     {
         $this->body_id = $str;
         return $this;
@@ -140,7 +153,7 @@ class Shared_Page
      * @param string $str
      * @return $this
      */
-    public function setBodyClass(string $str): self
+    protected function setBodyClass(string $str): self
     {
         $this->body_class = $str;
         return $this;
@@ -153,7 +166,7 @@ class Shared_Page
      * @param string $val
      * @return $this
      */
-    public function setMetaData(string $key, string $val): self
+    protected function setMetaData(string $key, string $val): self
     {
         $this->meta_tags[$key] = $val;
         return $this;
@@ -166,8 +179,12 @@ class Shared_Page
      * @param string $content
      * @return $this
      */
-    public function setOpenGraphData(string $property, string $content): self
+    protected function setOpenGraphData(string $property, string $content): self
     {
+        if ($property == 'og:image') {
+            $content = str_replace(array('http://', 'https://'), '//', $content);
+        }
+
         $this->openGraphData[$property] = $content;
         return $this;
     }
@@ -179,47 +196,91 @@ class Shared_Page
      * @param string $content
      * @return $this
      */
-    public function setTwitterCardData(string $property, string $content): self
+    protected function setTwitterCardData(string $property, string $content): self
     {
+        if ($property == 'twitter:image') {
+            $content = str_replace(array('http://', 'https://'), '//', $content);
+        }
+
         $this->twitterCardData[$property] = $content;
+        return $this;
+    }
+
+    /**
+     * Set the favicon URL.
+     *
+     * @param string $url The URL to the favicon image.
+     * @return $this
+     */
+    protected function setFavicon(string $url): self
+    {
+        $url = str_replace(array('http://', 'https://'), '//', $url);
+
+        $this->append('<link rel="icon" href="' . $url . '">');
+
+        return $this;
+    }
+
+    // Set canonical URL
+    protected function setCanonicalUrl(string $url): self
+    {
+        $url = str_replace(array('http://', 'https://'), '//', $url);
+
+        $this->append('<link rel="canonical" href="' . $url . '">');
+
         return $this;
     }
 
     /**
      * Add a CSS stylesheet.
      *
-     * @param string $url
-     * @param string $media
-     * @param bool $async
-     * @return $this
+     * @param string $url The URL of the stylesheet.
+     * @param string $media The media attribute for the stylesheet. Default is 'all'.
+     * @param bool $preload Whether to preload the stylesheet. Default is false.
+     * @return $this Returns the Shared_Page object for method chaining.
      */
-    public function addStyleSheet(string $url, string $media = 'all', bool $async = false): self
+    protected function addStyleSheet(string $url, string $media = 'all', bool $preload = false): self
     {
+        // Change passed in URL to be protocol relative
+        $url = str_replace(array('http://', 'https://'), '//', $url);
+
         $this->stylesheets[] = [
             'media' => $media,
             'url' => $url,
-            'async' => $async
+            'preload' => $preload
         ];
         return $this;
     }
 
-    /*
-     * Adds a JavaScript file to the page.
+    /**
+     * Add a JavaScript file.
      *
      * @param string $url The URL of the JavaScript file.
      * @param string $position The position of the JavaScript file (header or footer). Default is 'footer'.
+     * @param bool $async Whether to load the script asynchronously. Default is false.
      * @return $this Returns the Shared_Page object for method chaining.
      */
-    public function addJavascript(string $url, string $position = 'footer'): self
+    protected function addJavascript(string $url, string $position = 'footer', bool $async = false): self
     {
+        // Change passed in URL to be protocol relative
+        $url = str_replace(array('http://', 'https://'), '//', $url);
+
+
         if ($position == 'header') {
-            $this->head_javascripts[] = $url;
+            $this->head_javascripts[] = [
+                'url' => $url,
+                'async' => $async
+            ];
         } else {
-            $this->footer_javascripts[] = $url;
+            $this->footer_javascripts[] = [
+                'url' => $url,
+                'async' => $async
+            ];
         }
 
         return $this;
     }
+
 
     /**
      * Set a comment that will be placed in the meta tags section.
@@ -227,7 +288,7 @@ class Shared_Page
      * @param string $str
      * @return $this
      */
-    public function setMetaComment(string $str): self
+    protected function setMetaComment(string $str): self
     {
         $this->meta_comment = $str;
         return $this;
@@ -239,69 +300,69 @@ class Shared_Page
      * @param string $str
      * @return $this
      */
-    public function addBodyContent(string $str): self
+    protected function addBodyContent(string $str): self
     {
         $this->body .= $str;
         return $this;
     }
 
-    public function clearStyleSheets(): self
+    protected function clearStyleSheets(): self
     {
         $this->stylesheets = [];
         return $this;
     }
 
-    public function clearJavascripts(): self
+    protected function clearJavascripts(): self
     {
         $this->head_javascripts = [];
         $this->footer_javascripts = [];
         return $this;
     }
 
-    public function clearMetaTags(): self
+    protected function clearMetaTags(): self
     {
         $this->meta_tags = [];
         return $this;
     }
 
-    public function clearMetaData(string $key): self
+    protected function clearMetaData(string $key): self
     {
         unset($this->meta_tags[$key]);
         return $this;
     }
 
-    public function setAuthor(string $author): self
+    protected function setAuthor(string $author): self
     {
         $this->author = $author;
         return $this;
     }
 
-    public function display(): self
+    protected function display(): self
     {
         $this->build();
         print($this->html);
         return $this;
     }
 
-    public function fetch(): string
+    protected function fetch(): string
     {
         $this->build();
         return $this->html;
     }
 
-    public function toString(): string
+    protected function toString(): string
     {
         $this->build();
         return $this->html;
     }
 
-    private function append(string $html): self
+    protected function append(string $html): self
     {
         $this->html .= $html . "\n";
         return $this;
     }
 
-    private function build(): self
+    protected function build(): self
     {
         // Set up HTML skeleton
         $this->append($this->doctype);
@@ -315,15 +376,11 @@ class Shared_Page
             $this->append('<meta name="author" content="' . $this->author . '">');
         }
 
-        // If meta comment is set, append meta comment
-        if ($this->meta_comment) {
-            $this->append('<!-- ' . $this->meta_comment . ' -->');
-        }
-
         // Add JavaScript files to head if any
-        if (!empty($this->javascripts_head)) {
-            foreach ($this->javascripts_head as $javascript) {
-                $this->html .= "<script src=\"$javascript\"></script>\n";
+        if (!empty($this->head_javascripts)) {
+            foreach ($this->head_javascripts as $javascript) {
+                $asyncAttribute = $javascript['async'] ? 'async' : ''; // Check if async should be added
+                $this->append('<script src="' . $javascript['url'] . '" ' . $asyncAttribute . '></script>');
             }
         }
 
@@ -342,6 +399,14 @@ class Shared_Page
             }
         }
 
+        // Add stylesheets if any
+        if (!empty($this->stylesheets)) {
+            foreach ($this->stylesheets as $stylesheet) {
+                $preloadAttribute = $stylesheet['preload'] ? 'preload' : ''; // Check if preload should be added
+                $this->append('<link rel="stylesheet" href="' . $stylesheet['url'] . '" media="' . $stylesheet['media'] . '" ' . $preloadAttribute . '>');
+            }
+        }
+
         // Process Open Graph data if the array has values
         if (!empty($this->openGraphData)) {
             foreach ($this->openGraphData as $property => $content) {
@@ -356,12 +421,11 @@ class Shared_Page
             }
         }
 
-        // Add stylesheets if any
-        if (!empty($this->stylesheets)) {
-            foreach ($this->stylesheets as $stylesheet) {
-                $this->html .= "<link rel=\"stylesheet\" href=\"$stylesheet\">\n";
-            }
+        // If meta comment is set, append meta comment
+        if ($this->meta_comment) {
+            $this->append('<!-- ' . $this->meta_comment . ' -->');
         }
+
         $this->append('</head>');
 
         // Body tag with optional id and class attributes
@@ -378,9 +442,10 @@ class Shared_Page
         $this->append($this->body ?? '');
 
         // Add JavaScript files to body if any
-        if (!empty($this->javascripts_body)) {
-            foreach ($this->javascripts_body as $javascript) {
-                $this->html .= "<script src=\"$javascript\"></script>\n";
+        if (!empty($this->footer_javascripts)) {
+            foreach ($this->footer_javascripts as $javascript) {
+                $asyncAttribute = $javascript['async'] ? 'async' : ''; // Check if async should be added
+                $this->append('<script src="' . $javascript['url'] . '" ' . $asyncAttribute . '></script>');
             }
         }
 
