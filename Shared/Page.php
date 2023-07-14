@@ -1,234 +1,194 @@
 <?php
-/**
- * @author Alan T. Miller <alan@alanmiller.com>
- * @copyright Copyright (C) 2010, Alan T Miller, All Rights Reserved.
- *
- */
+
 class Shared_Page
 {
-    private $html;
-    private $body;
-    private $body_id;
-    private $body_class;
-    private $title;
-    private $title_suffix;
-    private $title_seperator = ' :: ';
-    private $meta_comment;
-    private $meta_tags = array();
-    private $stylesheets = array();
-    private $javascripts = array();
-    private $doctype = 'XHTML_1_0_STRICT';
-    private $doctypes = array(
-        'HTML_4_01_STRICT' => "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"\t
-        \"http://www.w3.org/TR/html4/strict.dtd\">",
-        'HTML_4_01_TRANSITIONAL' => "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\t
-        \"http://www.w3.org/TR/html4/loose.dtd\">",
-        'HTML_4_01_FRAMESET' => "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\"\t
-        \"http://www.w3.org/TR/html4/frameset.dtd\">",
-        'XHTML_1_0_STRICT' => "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\t
-        \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">",
-        'XHTML_1_0_TRANSITIONAL' => "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\t
-        \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">",
-        'XHTML_1_0_FRAMESET' => "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\"\t
-        \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">",
-        'XHTML_1_1' => "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"\t
-        \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">"
-        );
+    private string $html;
+    private string $body;
+    private string $body_id;
+    private string $body_class;
+    private string $title;
+    private string $title_suffix;
+    private string $title_separator = ' :: ';
+    private string $meta_comment;
+    private string $author;
 
+    private array $meta_tags = [];
+    private array $stylesheets = [];
+    private array $head_javascripts = [];
+    private array $footer_javascripts = [];
+    private string $doctype = "<!doctype html>";
+    private string $viewport = "width=device-width, initial-scale=1";
 
     public function __construct()
     {
         return $this;
     }
 
-    public function setDoctype($str)
-    {
-        if (!in_array($str, array_keys($this->doctypes))) {
-            throw new Exception('specified doctype not a valid option');
-        }
-        $this->doctype = $str;
-        return $this;
-    }
-
-    public function setTitle($str)
+    public function setTitle(string $str): self
     {
         $this->title = $str;
         return $this;
     }
 
-    public function setTitleSuffix($suffix)
+    public function setTitleSuffix(string $suffix): self
     {
         $this->title_suffix = $suffix;
         return $this;
     }
 
-    public function setTitleSeperator($str)
+    public function setTitleSeparator(string $str): self
     {
-        $this->title_seperator = $str;
+        $this->title_separator = $str;
         return $this;
     }
 
-    public function setBodyId($str)
+    public function setBodyId(string $str): self
     {
         $this->body_id = $str;
         return $this;
     }
 
-    public function setBodyClass($str)
+    public function setBodyClass(string $str): self
     {
         $this->body_class = $str;
         return $this;
     }
 
-    public function setMetaData($key, $val)
+    public function setMetaData(string $key, string $val): self
     {
         $this->meta_tags[$key] = $val;
         return $this;
     }
 
-    public function addStyleSheet($url, $media = 'all')
+    public function addStyleSheet(string $url, string $media = 'all'): self
     {
-        $this->stylesheets[] =
-            array(
-                'media' => $media,
-                'url' => $url
-                );
+        $this->stylesheets[] = ['media' => $media, 'url' => $url];
         return $this;
     }
 
-    public function addJavascript($url)
+    public function addJavascript(string $url, string $position = 'footer'): self
     {
-        $this->javascripts[] = $url;
+        if ($position == 'header') {
+            $this->head_javascripts[] = $url;
+        } else {
+            $this->footer_javascripts[] = $url;
+        }
+
         return $this;
     }
 
-    public function setMetaComment($str)
+    public function setMetaComment(string $str): self
     {
         $this->meta_comment = $str;
         return $this;
     }
 
-    public function addBodyContent($str)
+    public function addBodyContent(string $str): self
     {
         $this->body = $str;
         return $this;
     }
 
-    public function clearStyleSheets()
+    public function clearStyleSheets(): self
     {
-        $this->stylesheets = array();
+        $this->stylesheets = [];
         return $this;
     }
 
-    public function clearJavascripts()
+    public function clearJavascripts(): self
     {
-        $this->javascripts = array();
+        $this->head_javascripts = [];
+        $this->footer_javascripts = [];
         return $this;
     }
 
-    public function clearMetaTags()
+    public function clearMetaTags(): self
     {
-        $this->meta_tags = array();
+        $this->meta_tags = [];
         return $this;
     }
 
-    public function clearMetaData($key)
+    public function clearMetaData(string $key): self
     {
-        if (isset($this->meta_tags[$key])) {
-            unset($this->meta_tags[$key]);
-        }
+        unset($this->meta_tags[$key]);
         return $this;
     }
 
-    public function display()
+    public function setAuthor(string $author): self
     {
-        $this->_build();
+        $this->author = $author;
+        return $this;
+    }
+
+    public function display(): self
+    {
+        $this->build();
         print($this->html);
         return $this;
     }
 
-    public function fetch()
+    public function fetch(): string
     {
-        $this->_build();
+        $this->build();
         return $this->html;
     }
 
-    public function toString()
+    public function toString(): string
     {
-        $this->_build();
+        $this->build();
         return $this->html;
     }
 
-    private function _append($html)
+    private function append(string $html): self
     {
-        $this->html .= $html ."\n";
+        $this->html .= $html . "\n";
+        return $this;
     }
 
-    private function _build()
+    private function build(): self
     {
-        $this->_append($this->doctypes[$this->doctype]);
-        $this->_append('<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">');
-        $this->_append('<head>');
+        // Set up HTML skeleton
+        $this->append($this->doctype);
+        $this->append('<html lang="en">');
+        $this->append('<head>');
+        $this->append('<meta charset="UTF-8">');
+        $this->append('<meta name="viewport" content="' . $this->viewport . '">');
+        $this->append('<meta name="author" content="' . ($this->author ?? 'Unknown') . '">');
 
-        // add title tag
-        if(strlen($this->title_suffix) > 0 && strlen($this->title) > 0) {
-            $this->_append(sprintf('<title>%s</title>',$this->title .
-                $this->title_seperator . $this->title_suffix));
-        } elseif (empty($this->title_suffix) && strlen($this->title) > 0) {
-            $this->_append(sprintf('<title>%s</title>', $this->title));
-        } else {
-            $this->_append(sprintf('<title>%s</title>', $_SERVER["SCRIPT_NAME"]));
+        // Title
+        $fullTitle = $this->title . ($this->title_suffix ? $this->title_separator . $this->title_suffix : '');
+        $this->append('<title>' . ($fullTitle ?? $_SERVER["SCRIPT_NAME"]) . '</title>');
+
+        // Meta tags
+        foreach ($this->meta_tags as $name => $content) {
+            $this->append('<meta name="' . $name . '" content="' . $content . '">');
         }
 
-        // add meta tags
-        if(count($this->meta_tags > 0)) {
-            foreach($this->meta_tags AS $name => $content) {
-                $this->_append(sprintf('<meta name="%s" content="%s" />', $name, $content));
-            }
+        // Stylesheets
+        foreach ($this->stylesheets as $stylesheet) {
+            $this->append('<link rel="stylesheet" href="' . $stylesheet['url'] . '" media="' . $stylesheet['media'] . '">');
         }
 
-        $this->_append('<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />');
-
-        // add external stylesheet links
-        if(count($this->stylesheets) > 0) {
-            foreach($this->stylesheets AS $val) {
-                $this->_append(sprintf('<style type="text/css" media="%s">@import "%s";</style>',
-                    $val['media'], $val['url']));
-            }
+        // Javascripts in header
+        foreach ($this->head_javascripts as $script) {
+            $this->append('<script src="' . $script . '"></script>');
         }
 
-        // add external javascript file links
-        if(count($this->javascripts) > 0) {
-            foreach($this->javascripts AS $url) {
-                $this->_append(sprintf('<script type="text/javascript" src="%s"></script>', $url));
-            }
+        $this->append('</head>');
+        $this->append('<body' . ($this->body_id ? ' id="' . $this->body_id . '"' : '') . ($this->body_class ? ' class="' . $this->body_class . '"' : '') . '>');
+
+        // Body content
+        $this->append($this->body ?? '');
+
+        // Javascripts in footer
+        foreach ($this->footer_javascripts as $script) {
+            $this->append('<script src="' . $script . '"></script>');
         }
 
-        // if defined add meta comment
-        if(strlen($this->meta_comment) > 0) {
-            $this->_append(wordwrap('<!-- '.$this->meta_comment.' -->', 120));
-        }
+        $this->append('<!-- Created: ' . date('l jS \of F Y h:i:s A') . ' -->');
+        $this->append('</body>');
+        $this->append('</html>');
 
-        // close head section
-        $this->_append('</head>');
-
-        // add openning body tag
-        if (strlen($this->body_class) > 0 && strlen($this->body_id) > 0) {
-            $this->_append(sprintf('<body id="%s" class="%s">',$this->body_id, $this->body_class));
-        } else if(strlen($this->body_id) > 0) {
-            $this->_append(sprintf('<body id="%s">', $this->body_id));
-        } else {
-            $this->_append('<body>');
-        }
-
-        // add body
-        if(strlen($this->body) > 0) {
-            $this->_append($this->body);
-        }
-
-        // close out page
-        $this->_append('<!-- created: '.date('l jS \of F Y h:i:s A').' -->');
-        $this->_append('</body>');
-        $this->_append('</html>');
+        return $this;
     }
 }
