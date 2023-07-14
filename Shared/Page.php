@@ -153,37 +153,52 @@ class Shared_Page
         $this->append('<head>');
         $this->append('<meta charset="UTF-8">');
         $this->append('<meta name="viewport" content="' . $this->viewport . '">');
-        $this->append('<meta name="author" content="' . ($this->author ?? 'Unknown') . '">');
+
+            // If author is set, append author meta tag
+    if ($this->author) {
+        $this->append('<meta name="author" content="' . $this->author . '">');
+    }
+
+            // Add JavaScript files to head if any
+    if (!empty($this->javascripts_head)) {
+        foreach ($this->javascripts_head as $javascript) {
+            $this->html .= "<script src=\"$javascript\"></script>\n";
+        }
+    }
 
         // Title
-        $fullTitle = $this->title . ($this->title_suffix ? $this->title_separator . $this->title_suffix : '');
+        $fullTitle = $this->title;
+        if ($this->title_suffix) {
+            $fullTitle .= $this->title_separator . $this->title_suffix;
+        }
         $this->append('<title>' . ($fullTitle ?? $_SERVER["SCRIPT_NAME"]) . '</title>');
 
-        // Meta tags
+
+    // Add meta tags
+    if (!empty($this->meta_tags)) {
         foreach ($this->meta_tags as $name => $content) {
-            $this->append('<meta name="' . $name . '" content="' . $content . '">');
+            $this->html .= "<meta name=\"$name\" content=\"$content\">\n";
         }
+    }
 
-        // Stylesheets
+    // Add stylesheets
+    if (!empty($this->stylesheets)) {
         foreach ($this->stylesheets as $stylesheet) {
-            $this->append('<link rel="stylesheet" href="' . $stylesheet['url'] . '" media="' . $stylesheet['media'] . '">');
+            $this->html .= "<link rel=\"stylesheet\" href=\"$stylesheet\">\n";
         }
-
-        // Javascripts in header
-        foreach ($this->head_javascripts as $script) {
-            $this->append('<script src="' . $script . '"></script>');
-        }
-
+    }
         $this->append('</head>');
         $this->append('<body' . ($this->body_id ? ' id="' . $this->body_id . '"' : '') . ($this->body_class ? ' class="' . $this->body_class . '"' : '') . '>');
 
         // Body content
         $this->append($this->body ?? '');
 
-        // Javascripts in footer
-        foreach ($this->footer_javascripts as $script) {
-            $this->append('<script src="' . $script . '"></script>');
+    // Add JavaScript files to body if any
+    if (!empty($this->javascripts_body)) {
+        foreach ($this->javascripts_body as $javascript) {
+            $this->html .= "<script src=\"$javascript\"></script>\n";
         }
+    }
 
         $this->append('<!-- Created: ' . date('l jS \of F Y h:i:s A') . ' -->');
         $this->append('</body>');
