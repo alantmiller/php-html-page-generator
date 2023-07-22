@@ -1,1 +1,1 @@
-Class used to programmatically create an HTML page
+#Programmatically create an HTML page with PHP
