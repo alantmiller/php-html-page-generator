@@ -38,15 +38,15 @@
  */
 class PhpHtmlPageGenerator
 {
-    protected string $html;
-    protected string $body;
-    protected string $body_id;
-    protected string $body_class;
-    protected string $title;
-    protected string $title_suffix;
+    protected string $html = '';
+    public string $body = '';
+    protected string $body_id = '';
+    protected string $body_class = '';
+    protected string $title = '';
+    protected string $title_suffix = '';
     protected string $title_separator = ' :: ';
-    protected string $meta_comment;
-    protected string $author;
+    protected string $meta_comment = '';
+    protected string $author = '';
     protected array $meta_tags = [];
     protected array $stylesheets = [];
     protected array $head_javascripts = [];
@@ -58,7 +58,7 @@ class PhpHtmlPageGenerator
 
     public function __construct()
     {
-        $this->setCharset(); // Defaults to UTF-8
+        //$this->setCharset(); // Defaults to UTF-8
         return $this;
     }
 
@@ -69,7 +69,7 @@ class PhpHtmlPageGenerator
      * @param string $expires
      * @return $this
      */
-    protected function setCacheHeaders(string $cacheControl = 'no-cache', int $expires = 0): self
+    public function setCacheHeaders(string $cacheControl = 'no-cache', int $expires = 0): self
     {
         // Check if headers have been sent
         if (headers_sent()) {
@@ -93,7 +93,7 @@ class PhpHtmlPageGenerator
      * @param string $charset The character set.
      * @return $this
      */
-    protected function setCharset(string $charset = 'UTF-8'): self
+    public function setCharset(string $charset = 'UTF-8'): self
     {
         $this->append('<meta charset="' . $charset . '">');
         return $this;
@@ -105,7 +105,7 @@ class PhpHtmlPageGenerator
      * @param string $str
      * @return $this
      */
-    protected function setTitle(string $str): self
+    public function setTitle(string $str): self
     {
         $this->title = $str;
         return $this;
@@ -117,7 +117,7 @@ class PhpHtmlPageGenerator
      * @param string $suffix
      * @return $this
      */
-    protected function setTitleSuffix(string $suffix): self
+    public function setTitleSuffix(string $suffix): self
     {
         $this->title_suffix = $suffix;
         return $this;
@@ -129,7 +129,7 @@ class PhpHtmlPageGenerator
      * @param string $str
      * @return $this
      */
-    protected function setTitleSeparator(string $str): self
+    public function setTitleSeparator(string $str): self
     {
         $this->title_separator = $str;
         return $this;
@@ -141,7 +141,7 @@ class PhpHtmlPageGenerator
      * @param string $str
      * @return $this
      */
-    protected function setBodyId(string $str): self
+    public function setBodyId(string $str): self
     {
         $this->body_id = $str;
         return $this;
@@ -153,7 +153,7 @@ class PhpHtmlPageGenerator
      * @param string $str
      * @return $this
      */
-    protected function setBodyClass(string $str): self
+    public function setBodyClass(string $str): self
     {
         $this->body_class = $str;
         return $this;
@@ -166,7 +166,7 @@ class PhpHtmlPageGenerator
      * @param string $val
      * @return $this
      */
-    protected function setMetaData(string $key, string $val): self
+    public function setMetaData(string $key, string $val): self
     {
         $this->meta_tags[$key] = $val;
         return $this;
@@ -179,7 +179,7 @@ class PhpHtmlPageGenerator
      * @param string $content
      * @return $this
      */
-    protected function setOpenGraphData(string $property, string $content): self
+    public function setOpenGraphData(string $property, string $content): self
     {
         if ($property == 'og:image') {
             $content = str_replace(array('http://', 'https://'), '//', $content);
@@ -196,7 +196,7 @@ class PhpHtmlPageGenerator
      * @param string $content
      * @return $this
      */
-    protected function setTwitterCardData(string $property, string $content): self
+    public function setTwitterCardData(string $property, string $content): self
     {
         if ($property == 'twitter:image') {
             $content = str_replace(array('http://', 'https://'), '//', $content);
@@ -212,7 +212,7 @@ class PhpHtmlPageGenerator
      * @param string $url The URL to the favicon image.
      * @return $this
      */
-    protected function setFavicon(string $url): self
+    public function setFavicon(string $url): self
     {
         $url = str_replace(array('http://', 'https://'), '//', $url);
 
@@ -222,7 +222,7 @@ class PhpHtmlPageGenerator
     }
 
     // Set canonical URL
-    protected function setCanonicalUrl(string $url): self
+    public function setCanonicalUrl(string $url): self
     {
         $url = str_replace(array('http://', 'https://'), '//', $url);
 
@@ -239,7 +239,7 @@ class PhpHtmlPageGenerator
      * @param bool $preload Whether to preload the stylesheet. Default is false.
      * @return $this Returns the Shared_Page object for method chaining.
      */
-    protected function addStyleSheet(string $url, string $media = 'all', bool $preload = false): self
+    public function addStyleSheet(string $url, string $media = 'all', bool $preload = false): self
     {
         // Change passed in URL to be protocol relative
         $url = str_replace(array('http://', 'https://'), '//', $url);
@@ -260,7 +260,7 @@ class PhpHtmlPageGenerator
      * @param bool $async Whether to load the script asynchronously. Default is false.
      * @return $this Returns the Shared_Page object for method chaining.
      */
-    protected function addJavascript(string $url, string $position = 'footer', bool $async = false): self
+    public function addJavascript(string $url, string $position = 'footer', bool $async = false): self
     {
         // Change passed in URL to be protocol relative
         $url = str_replace(array('http://', 'https://'), '//', $url);
@@ -288,7 +288,7 @@ class PhpHtmlPageGenerator
      * @param string $str
      * @return $this
      */
-    protected function setMetaComment(string $str): self
+    public function setMetaComment(string $str): self
     {
         $this->meta_comment = $str;
         return $this;
@@ -300,44 +300,44 @@ class PhpHtmlPageGenerator
      * @param string $str
      * @return $this
      */
-    protected function addBodyContent(string $str): self
+    public function addBodyContent(string $str): self
     {
         $this->body .= $str;
         return $this;
     }
 
-    protected function setAuthor(string $author): self
+    public function setAuthor(string $author): self
     {
         $this->author = $author;
         return $this;
     }
 
-    protected function display(): self
+    public function display(): self
     {
         $this->build();
         print($this->html);
         return $this;
     }
 
-    protected function fetch(): string
+    public function fetch(): string
     {
         $this->build();
         return $this->html;
     }
 
-    protected function toString(): string
+    public function toString(): string
     {
         $this->build();
         return $this->html;
     }
 
-    protected function append(string $html): self
+    public function append(string $html): self
     {
         $this->html .= $html . "\n";
         return $this;
     }
 
-    protected function build(): self
+    public function build(): self
     {
         // Set up HTML skeleton
         $this->append($this->doctype);
