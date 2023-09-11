@@ -36,6 +36,13 @@
  *     ->display();
  *
  */
+
+// Declare the namespace for this class. It should match the PSR-4 namespace in your composer.json
+namespace PhpHtmlPageGenerator;
+
+/**
+ * PhpHtmlPageGenerator is a simple class to generate HTML pages.
+ */
 class PhpHtmlPageGenerator
 {
     protected string $html = '';
