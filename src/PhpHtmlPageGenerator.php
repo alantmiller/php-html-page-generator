@@ -41,7 +41,7 @@
 namespace PhpHtmlPageGenerator;
 
 /**
- * PhpHtmlPageGenerator is a simple class to generate HTML pages.
+ * php-html-page-generator is a simple class to generate HTML pages.
  */
 class PhpHtmlPageGenerator
 {
