@@ -3,7 +3,6 @@
     "description": "Alan's simple PHP HTML Page Generator",
     "license": "MIT",
     "type": "library",
-    "version": "1.0.0",
     "autoload": {
         "psr-4": {
             "PhpHtmlPageGenerator\\": "src/"
